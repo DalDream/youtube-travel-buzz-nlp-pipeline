@@ -1,60 +1,62 @@
-# Travel Comment Classification
+# Sentiment Analysis on Travel-Related Comments
 
 ## Overview
 
-This module focuses on building a binary text classification model to determine whether a YouTube comment is **travel-related** or **non-travel-related**. This step is the foundation of the entire pipeline, as only comments classified as travel-related are passed downstream for sentiment analysis and demand signal interpretation.
+This module performs **sentiment analysis exclusively on travel-related comments** filtered by the previous classification stage. The objective is not merely to label sentiment, but to **extract interpretable demand signals** embedded in user discourse.
 
-The core challenge addressed here is that **keyword-based filtering fails to capture contextual travel intent**, especially in noisy, colloquial YouTube comments. Therefore, a context-aware language model was required.
+Unlike generic sentiment tasks, travel-related comments frequently contain **neutral, information-seeking expressions** that carry latent intent. Capturing this nuance was central to the design of this module.
 
 ---
 
 ## Problem Definition
 
-### Why Travel Comment Classification Matters
+### Why Sentiment Matters Beyond Comment Volume
 
-YouTube travel videos attract a wide range of comments, including:
+Initial exploration showed that raw engagement metrics (comment counts, likes) were insufficient to explain downstream travel demand.
 
-- Editing or video quality feedback
-- Reactions unrelated to travel intent
-- Casual chat or spam
+Key observations:
 
-If these comments are not filtered out, downstream metrics such as comment volume or sentiment ratios become distorted and unreliable.
+- High comment volume without sentiment separation produced noisy signals
+- Negative sentiment spikes often aligned with demand drops
+- **Neutral comments (questions, factual statements)** preceded increases in actual travel demand
 
-The objective of this module is to:
-
-- Accurately identify comments that contain **explicit or implicit travel context**
-- Minimize false positives that inflate perceived travel interest
+Therefore, sentiment analysis was introduced to **disaggregate travel buzz into meaningful behavioral signals**.
 
 ---
 
 ## Data Construction
 
-### Initial Approach and Limitations
+### Initial Binary Sentiment Attempt
 
-- Training data was initially generated using LLMs (approximately 500 samples)
-- Early experiments showed **severe overfitting** and low generalization
+- Dataset: ~3,000 LLM-generated comments
+- Labels: Positive / Negative (1:1 ratio)
+- Model performance was unstable and inconsistent
 
-Key issue identified:
+Issue identified:
 
-> LLM-generated comments were grammatically clean and stylistically uniform, deviating from real-world YouTube comment noise.
+> Excluding neutral sentiment forces ambiguous comments into polar classes, degrading classification reliability.
 > 
 
 ---
 
-### Data Expansion and Prompt Engineering
+### Multi-Class Sentiment Redesign
 
-To address this gap, the dataset was progressively refined:
+To address this, the task was redefined as a **3-class classification problem**.
 
-- Expanded dataset size: 500 → 1,000 → 2,000 comments
-- Balanced class distribution (travel / non-travel)
-- Introduced detailed prompt constraints to simulate:
-    - Slang, typos, emojis, repetition
-    - Mixed sentence lengths and tones
-    - Realistic ambiguity seen in actual comment sections
+- Total samples: 4,800
+    - Positive: 1,600
+    - Negative: 1,600
+    - Neutral: 1,600
 
-This significantly improved model robustness.
+Neutral comments were carefully designed to include:
 
-The full prompt design rationale and representative templates used for generating realistic linguistic noise and semantic diversity are documented in the following file:
+- Information requests
+- Location or facility descriptions
+- Non-evaluative factual statements
+
+This redesign significantly improved interpretability and stability.
+
+The full prompt design rationale and representative templates for sentiment-controlled data generation are documented in the following file:
 
 [Prompt Design File](prompts/prompt_design.md)
 
@@ -62,82 +64,69 @@ The full prompt design rationale and representative templates used for generatin
 
 ## Model Architecture
 
-- Base model: `monologg/koelectra-small-discriminator`
-- Task: Binary sequence classification
-- Tokenization: Standard KoELECTRA tokenizer
+- Base model: `monologg/koelectra-base-discriminator`
+- Task: Multi-class sequence classification (3 labels)
+- Tokenization: KoELECTRA tokenizer
 - Fine-tuning: Hugging Face's Trainer API
-- Train/validation split: 80% / 20%
+- Training duration: ~140 minutes
 
-The trained model for this module is publicly available on Hugging Face:
+The trained sentiment classification model is publicly available on Hugging Face:
 
-→ https://huggingface.co/USERNAME/travel-comment-classifier
-
----
-
-## Human-in-the-Loop Enhancement
-
-### Confidence-Based Error Analysis
-
-Despite improved data quality, the model still showed uncertainty in borderline cases.
-
-Strategy applied:
-
-- Extracted predictions with confidence scores between **0.45–0.60**
-- These samples represent ambiguous cases where the model struggled most
-
-### Manual Relabeling
-
-- Approximately 200 comments were manually reviewed and relabeled
-- These samples were reintegrated into the training set
-- The model was retrained with this augmented dataset
-
-This approach mirrors practical **active learning / human-in-the-loop** workflows used in production systems.
+→ https://huggingface.co/USERNAME/travel-sentiment-classifier
 
 ---
 
 ## Performance Summary
 
-After data refinement and confidence-based retraining:
+Final evaluation results on the synthetic validation set:
 
-- **Accuracy:** ~95%
-- **F1 Score:** ~95%
+- **Accuracy:** ~96%
+- **Macro F1 Score:** ~96%
 
-While early-stage metrics were not systematically logged, qualitative comparison confirmed substantial robustness gains after data refinement.
+While these metrics indicate strong performance under controlled validation conditions, qualitative inspection on real-world YouTube comments revealed reduced reliability at the **individual comment level**.
 
-> The primary goal was not metric maximization, but stability under noisy real-world inputs.
-> 
+This discrepancy is attributed to:
+- Semantic ambiguity in short-form user comments
+- Distributional differences between synthetic training data and real-world discourse
+- The inherent subjectivity of sentiment interpretation in travel-related contexts
+
+Accordingly, this model is positioned as a **trend-level signal extractor**, rather than a tool for precise per-comment sentiment judgment.
 
 ---
 
 ## Key Insight
 
-> High-quality data design matters more than model complexity.
+> Neutral sentiment is not noise; it represents latent travel intent.
 > 
 
-This experiment demonstrated that:
+Empirical analysis revealed that:
 
-- Simply increasing data volume is insufficient
-- Prompt design and ambiguity-aware correction are critical
-- Confidence-based human intervention is a scalable and effective strategy
+- Increases in neutral sentiment often preceded rises in actual travel demand
+- Question-heavy comment sections function as early-stage planning signals
+- Sentiment separation provided clearer leading indicators than raw volume metrics
+
+This insight reframed sentiment analysis from a descriptive task into a **predictive signal extraction tool**.
 
 ---
 
 ## Output and Usage
 
-- Output: Binary label (`is_travel = 1 / 0`)
-- Only comments classified as `is_travel = 1` are forwarded to the sentiment analysis module
+- Output labels:
+    - `0`: Negative
+    - `1`: Neutral
+    - `2`: Positive
 
-This ensures that downstream demand signals are derived from **semantically valid travel discourse**, not raw engagement noise.
+Sentiment ratios were aggregated at the **city–time level** and used as explanatory variables in downstream demand analysis.
 
 ---
 
 ## Limitations and Future Work
 
-- Hyperparameter tuning was not performed due to time and hardware constraints
-- Future improvements could include:
-    - Semi-supervised learning with raw comments
-    - Dynamic thresholding for confidence selection
-    - Cross-domain validation on non-travel YouTube channels
+- Confidence-based relabeling was planned but not fully executed due to time and hardware constraints
+- Potential extensions include:
+    - Active learning on raw YouTube comments
+    - Context-aware sentiment using longer comment threads
+    - Cross-lingual sentiment generalization
 
 ---
 
@@ -145,7 +134,7 @@ This ensures that downstream demand signals are derived from **semantically vali
 
 This module was developed as part of a 4-member team project.
 
-- Prompt design and data generation: Team member GY Yu
-- Model selection, training strategy, error analysis, and final validation: **Author**
+- Prompt engineering and dataset construction: Team member GY Yu
+- Model framing, redesign to multi-class sentiment, evaluation strategy, and interpretation: **Author**
 
-All outputs were jointly reviewed and consolidated.
+All outputs were jointly reviewed and integrated into the final pipeline.
