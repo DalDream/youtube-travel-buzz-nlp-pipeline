@@ -64,11 +64,11 @@ The core classification models used in this pipeline are publicly available on H
 
 - **Travel-related Comment Classifier**
     
-    https://huggingface.co/USERNAME/travel-comment-classifier
+    https://huggingface.co/DalDream/youtube-travel-buzz-relevance-classifier
     
 - **Travel Sentiment Classifier (Positive / Neutral / Negative)**
     
-    https://huggingface.co/USERNAME/travel-sentiment-classifier
+    https://huggingface.co/DalDream/youtube-travel-buzz-sentiment-classifier
     
 
 Each model functions as a **signal extraction component** within the pipeline rather than a standalone analytical endpoint.
@@ -170,5 +170,6 @@ This repository is designed as:
 ## Disclaimer
 
 Some downstream validation referenced in this project relies on non-public datasets and tools.
+
 
 This repository intentionally contains **only components that can be publicly shared**, with emphasis on pipeline design rather than result disclosure.
