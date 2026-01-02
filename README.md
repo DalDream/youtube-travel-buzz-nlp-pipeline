@@ -46,11 +46,11 @@ Raw YouTube Comments
         ↓
 Travel-related Comment Classification
         ↓
-SentimentClassification(Positive / Neutral / Negative)
+Sentiment Classification(Positive / Neutral / Negative)
         ↓
 Structured Travel Buzz Signals
         ↓
-External DemandValidation(Non-public)
+External Demand Validation(Non-public)
 
 ```
 
@@ -173,3 +173,4 @@ Some downstream validation referenced in this project relies on non-public datas
 
 
 This repository intentionally contains **only components that can be publicly shared**, with emphasis on pipeline design rather than result disclosure.
+
