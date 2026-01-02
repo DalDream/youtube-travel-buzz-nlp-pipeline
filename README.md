@@ -161,7 +161,6 @@ These constraints do not affect the **conceptual validity** of the signal engine
 
 This repository is designed as:
 
-- A **signal engineering portfolio project**
 - A reference architecture for transforming social media buzz into demand-aligned features
 - A foundation for future real-time or multi-platform demand sensing systems
 
@@ -173,4 +172,5 @@ Some downstream validation referenced in this project relies on non-public datas
 
 
 This repository intentionally contains **only components that can be publicly shared**, with emphasis on pipeline design rather than result disclosure.
+
 
