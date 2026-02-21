@@ -72,7 +72,7 @@ The full prompt design rationale and representative templates for sentiment-cont
 
 The trained sentiment classification model is publicly available on Hugging Face:
 
-→ https://huggingface.co/USERNAME/travel-sentiment-classifier
+→ https://huggingface.co/DalDream/youtube-travel-buzz-sentiment-classifier
 
 ---
 
@@ -138,3 +138,4 @@ This module was developed as part of a 4-member team project.
 - Model framing, redesign to multi-class sentiment, evaluation strategy, and interpretation: **Author**
 
 All outputs were jointly reviewed and integrated into the final pipeline.
+
