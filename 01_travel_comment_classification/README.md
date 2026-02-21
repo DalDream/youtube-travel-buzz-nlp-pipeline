@@ -70,7 +70,7 @@ The full prompt design rationale and representative templates used for generatin
 
 The trained model for this module is publicly available on Hugging Face:
 
-→ https://huggingface.co/USERNAME/travel-comment-classifier
+→ https://huggingface.co/DalDream/youtube-travel-buzz-relevance-classifier
 
 ---
 
@@ -147,5 +147,6 @@ This module was developed as part of a 4-member team project.
 
 - Prompt design and data generation: Team member GY Yu
 - Model selection, training strategy, error analysis, and final validation: **Author**
+
 
 All outputs were jointly reviewed and consolidated.
